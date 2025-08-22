@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro e Planilha de Alunos - SZABJJ</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; background-color: #121212; color: #e0e0e0; }
+        .container { max-width: 95%; margin: auto; }
+        .header { text-align: center; margin-bottom: 20px; }
+        h1 { color: #0099ff; }
+
+        .tabs { display: flex; border-bottom: 2px solid #333; margin-bottom: 20px; }
+        .tab-button {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background-color: #1e1e1e;
+            color: #ccc;
+            font-size: 18px;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+            border-bottom: 2px solid #007bff;
+        }
+        .tab-button:hover:not(.active) { background-color: #2a2a2a; color: #fff; }
+        
+        .tab-content { padding-top: 20px; }
+        .tab-content.hidden { display: none; }
+        
+        .form-section, .table-section, .filter-section { background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #e0e0e0; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 10px; box-sizing: border-box; 
+            border: 1px solid #444; border-radius: 4px; font-size: 16px;
+            background-color: #333; color: #e0e0e0; 
+        }
+        
+        .btn { padding: 12px; border: none; border-radius: 4-px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; width: 100%; }
+        .btn-add { background-color: #007bff; }
+        .btn-add:hover { background-color: #0056b3; }
+        .form-buttons { display: flex; gap: 10px; }
+        .form-buttons .btn { width: 50%; }
+
+        .import-export-btns { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-export-csv, .btn-export-pdf { width: auto; flex: 1; }
+        .btn-export-csv { background-color: #218838; }
+        .btn-export-csv:hover { background-color: #1e7a33; }
+        .btn-export-pdf { background-color: #dc3545; }
+        .btn-export-pdf:hover { background-color: #c82333; }
+        .btn-import-csv { background-color: #ffc107; color: black; }
+        .btn-import-csv:hover { background-color: #e0a800; }
+        .btn-limpar-lista { background-color: #dc3545; }
+        .btn-limpar-lista:hover { background-color: #c82333; }
+        .btn-limpar-form { background-color: #555; }
+        .btn-limpar-form:hover { background-color: #444; }
+        .btn-excluir-selecionados { background-color: #dc3545; }
+        .btn-excluir-selecionados:hover { background-color: #c82333; }
+        .btn-salvar-edicoes { background-color: #007bff; }
+        .btn-salvar-edicoes:hover { background-color: #0056b3; }
+        .btn-mudar-status { background-color: #6c757d; }
+        .btn-mudar-status:hover { background-color: #5a6268; }
+
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #444; }
+        th { background-color: #2a2a2a; font-weight: bold; color: #e0e0e0; }
+        tr:hover { background-color: #333; }
+        
+        /* Estilos para a célula editável */
+        .editable-cell {
+            cursor: text;
+            background-color: #333;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .editable-cell:focus {
+            outline: none;
+            background-color: #444;
+            border: 1px solid #007bff;
+        }
+        .select-edit {
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            width: 100%;
+            padding: 5px;
+        }
+
+        .whatsapp-link { text-decoration: none; color: #25d366; font-weight: bold; }
+        .action-buttons button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            margin: 0 5px;
+            color: #0099ff;
+        }
+        .action-buttons .btn-remove { color: #dc3545; }
+
+        .historico-campeonatos { display: flex; gap: 10px; }
+        .historico-campeonatos .medal-input { flex: 1; }
+
+        .info-box { padding: 10px; background-color: #2a2a2a; border: 1px solid #444; border-radius: 4px; margin-top: 5px; font-size: 0.9em; }
+
+        .filter-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .filter-group > div { flex: 1 1 200px; }
+        
+        .import-section { margin-top: 15px; }
+        .import-section input[type="file"] { border: none; padding: 0; }
+        
+        .status-ativo { color: #28a745; font-weight: bold; }
+        .status-inativo { color: #dc3545; font-weight: bold; }
+
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .list-header h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .list-header h2 span {
+            font-size: 0.8em;
+            background-color: #007bff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .list-header .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .list-header .action-btns .btn {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        @media print {
+            body { background: none; color: black; }
+            .form-section, .filter-section, .btn, .action-buttons, .import-export-btns, .tabs, .tab-button, .list-header .action-btns, #selecionarTodos, .aluno-checkbox, .select-edit { display: none; }
+            .header { text-align: left; }
+            h1, .list-header h2 { font-size: 24px; color: black; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ccc; padding: 8px; font-size: 12px; white-space: normal; background-color: white; color: black; }
+            th { background-color: #eee; }
+            .table-responsive { overflow-x: visible; }
+            .editable-cell { display: table-cell; contenteditable: false; background-color: transparent; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Cadastro de Alunos - SZABJJ</h1>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('tabCadastrar')">Cadastrar Aluno</button>
+        <button class="tab-button" onclick="showTab('tabVisualizar')">Visualizar Alunos</button>
+    </div>
+
+    <div id="tabCadastrar" class="tab-content">
+        <div class="form-section">
+            <h2>Adicionar Novo Aluno</h2>
+            <form id="formAluno">
+                <input type="hidden" id="alunoId">
+                <div class="form-group">
+                    <label for="nomeCompleto">Nome Completo:</label>
+                    <input type="text" id="nomeCompleto" required>
+                </div>
+                <div class="form-group">
+                    <label for="dataNascimento">Data de Nascimento:</label>
+                    <input type="text" id="dataNascimento" placeholder="DD-MM-YYYY" oninput="formatAndCalculateDate(this, 'idadeResult', calcularIdade)" required>
+                    <div class="info-box" id="idadeResult">Idade:</div>
+                </div>
+                <div class="form-group">
+                    <label for="whatsapp">WhatsApp (DDD + número):</label>
+                    <input type="text" id="whatsapp" placeholder="Ex: 21999998888">
+                </div>
+    
+                <div id="secaoResponsavel" style="display: none;">
+                    <h3>Informações do Responsável</h3>
+                    <div class="form-group">
+                        <label for="nomeResponsavel">Nome Completo do Responsável:</label>
+                        <input type="text" id="nomeResponsavel">
+                    </div>
+                    <div class="form-group">
+                        <label for="whatsappResponsavel">WhatsApp do Responsável (DDD + número):</label>
+                        <input type="text" id="whatsappResponsavel" placeholder="Ex: 21999998888">
+                    </div>
+                    <div class="form-group">
+                        <label for="pessoasAutorizadas">Pessoas autorizadas a buscar o aluno:</label>
+                        <textarea id="pessoasAutorizadas" rows="3" placeholder="Ex: João, Maria, Tio Pedro"></textarea>
+                    </div>
+                </div>
+    
+                <div class="form-group">
+                    <label for="status">Status do Aluno:</label>
+                    <select id="status">
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                </div>
+    
+                <div class="form-group">
+                    <label for="tempoTreinoAntes">Tempo de treino antes (meses):</label>
+                    <input type="number" id="tempoTreinoAntes" min="0" oninput="calcularTempoAntes()">
+                    <div class="info-box" id="tempoAntesResult">Tempo antes de SZABJJ:</div>
+                </div>
+                <div class="form-group">
+                    <label for="graduacao">Graduação (Faixa):</label>
+                    <select id="graduacao">
+                        <option value="Branca">Branca</option>
+                        <option value="Cinza">Cinza</option>
+                        <option value="Amarela">Amarela</option>
+                        <option value="Laranja">Laranja</option>
+                        <option value="Verde">Verde</option>
+                        <option value="Azul">Azul</option>
+                        <option value="Roxa">Roxa</option>
+                        <option value="Marrom">Marrom</option>
+                        <option value="Preta">Preta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dataGraduacaoAtual">Data da Graduação Atual:</label>
+                    <input type="text" id="dataGraduacaoAtual" placeholder="DD-MM-YYYY" oninput="formatAndCalculateDate(this, 'tempoFaixaAtualResult', calcularTempoNaFaixaAtual)">
+                    <div class="info-box" id="tempoFaixaAtualResult">Tempo na faixa:</div>
+                </div>
+                <div class="form-group">
+                    <label for="dataPrevisaoGraduacao">Previsão de Graduação:</label>
+                    <input type="text" id="dataPrevisaoGraduacao" placeholder="DD-MM-YYYY">
+                </div>
+    
+                <div class="form-group">
+                    <label for="objetivos">Objetivos:</label>
+                    <select id="objetivos" onchange="gerenciarHistoricoCampeonatos()">
+                        <option value="Competição">Competição</option>
+                        <option value="Defesa Pessoal">Defesa Pessoal</option>
+                        <option value="Hobby">Hobby</option>
+                        <option value="Atividade Física">Atividade Física</option>
+                    </select>
+                </div>
+                <div class="form-group" id="historicoCampeonatos" style="display: none;">
+                    <label>Histórico de Medalhas:</label>
+                    <div class="historico-campeonatos">
+                        <input type="number" id="medalhasOuro" class="medal-input" placeholder="Ouro" min="0">
+                        <input type="number" id="medalhasPrata" class="medal-input" placeholder="Prata" min="0">
+                        <input type="number" id="medalhasBronze" class="medal-input" placeholder="Bronze" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="estiloLuta">Estilo de Luta:</label>
+                    <select id="estiloLuta">
+                        <option value="Guardeiro">Guardeiro</option>
+                        <option value="Passador">Passador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dataMatricula">Data da Matrícula:</label>
+                    <input type="text" id="dataMatricula" placeholder="DD-MM-YYYY" oninput="formatAndCalculateDate(this, 'tempoEquipeResult', calcularTempoEquipe)" required>
+                    <div class="info-box" id="tempoEquipeResult">Tempo de Equipe:</div>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-add" id="btnSalvar">Adicionar Aluno</button>
+                    <button type="button" class="btn btn-limpar-form" onclick="limparFormulario()">Limpar Formulário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="tabVisualizar" class="tab-content hidden">
+        <div class="filter-section">
+            <h2>Filtrar Alunos</h2>
+            <div class="filter-group">
+                <div>
+                    <label for="filtroNome">Nome:</label>
+                    <input type="text" id="filtroNome" oninput="filtrarAlunos()">
+                </div>
+                <div>
+                    <label for="filtroStatus">Status:</label>
+                    <select id="filtroStatus" onchange="filtrarAlunos()">
+                        <option value="">Todos</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtroMesNascimento">Mês de Nascimento:</label>
+                    <select id="filtroMesNascimento" onchange="filtrarAlunos()">
+                        <option value="">Todos</option>
+                        <option value="0">Janeiro</option>
+                        <option value="1">Fevereiro</option>
+                        <option value="2">Março</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Maio</option>
+                        <option value="5">Junho</option>
+                        <option value="6">Julho</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Setembro</option>
+                        <option value="9">Outubro</option>
+                        <option value="10">Novembro</option>
+                        <option value="11">Dezembro</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtroIdade">Idade:</label>
+                    <input type="number" id="filtroIdade" min="0" oninput="filtrarAlunos()">
+                </div>
+                <div>
+                    <label for="filtroGraduacao">Graduação:</label>
+                    <select id="filtroGraduacao" onchange="filtrarAlunos()">
+                        <option value="">Todas</option>
+                        <option value="Branca">Branca</option>
+                        <option value="Cinza">Cinza</option>
+                        <option value="Amarela">Amarela</option>
+                        <option value="Laranja">Laranja</option>
+                        <option value="Verde">Verde</option>
+                        <option value="Azul">Azul</option>
+                        <option value="Roxa">Roxa</option>
+                        <option value="Marrom">Marrom</option>
+                        <option value="Preta">Preta</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtroObjetivos">Objetivos:</label>
+                    <select id="filtroObjetivos" onchange="filtrarAlunos()">
+                        <option value="">Todos</option>
+                        <option value="Competição">Competição</option>
+                        <option value="Defesa Pessoal">Defesa Pessoal</option>
+                        <option value="Hobby">Hobby</option>
+                        <option value="Atividade Física">Atividade Física</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtroEstiloLuta">Estilo de Luta:</label>
+                    <select id="filtroEstiloLuta" onchange="filtrarAlunos()">
+                        <option value="">Todos</option>
+                        <option value="Guardeiro">Guardeiro</option>
+                        <option value="Passador">Passador</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn" onclick="limparFiltros()">Limpar Filtros</button>
+        </div>
+    
+        <div class="table-section">
+            <div class="list-header">
+                <h2>Lista de Alunos <span id="totalAlunos">Total: 0</span></h2>
+                <div class="action-btns">
+                    <select id="bulkStatus" class="select-edit">
+                        <option value="">Mudar Status para...</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                    <button class="btn btn-mudar-status" onclick="mudarStatusEmMassa()">Mudar Status</button>
+                    <button class="btn btn-excluir-selecionados" onclick="excluirAlunosSelecionados()">Excluir Selecionados</button>
+                    <button class="btn btn-salvar-edicoes" onclick="salvarEdicoesEmMassa()">Salvar Edições</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="tabelaAlunos">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th><input type="checkbox" id="selecionarTodos"></th>
+                            <th>Nome e Dados Pessoais</th>
+                            <th>Status</th>
+                            <th>WhatsApp</th>
+                            <th>Responsável e Autorizados</th>
+                            <th>Graduação</th>
+                            <th>Tempo na Faixa</th>
+                            <th>Previsão</th>
+                            <th>Objetivos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="import-export-btns">
+                <div class="import-section">
+                    <input type="file" id="importCsvInput" accept=".csv">
+                    <button id="importCsvBtn" class="btn btn-import-csv">Importar CSV</button>
+                </div>
+                <button id="exportarCsvBtn" class="btn btn-export-csv">Exportar Planilha (CSV)</button>
+                <button id="imprimirPdfBtn" class="btn btn-export-pdf">Imprimir / Salvar como PDF</button>
+                <button id="limparListaBtn" class="btn btn-limpar-lista">Limpar Lista</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+    let editingId = null;
+
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.getElementById(tabId).classList.remove('hidden');
+
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+        });
+        document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+
+        if (tabId === 'tabVisualizar') {
+            console.log('--- Visualizando Alunos ---');
+            console.log('Dados carregados do localStorage:', alunos);
+            filtrarAlunos();
+        }
+    }
+
+    function parseToISO(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split(/[-/]/);
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            } else {
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+        }
+        return dateStr;
+    }
+
+    function formatFromISO(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateStr;
+    }
+
+    function formatAndCalculateDate(input, resultId, calculateFunc) {
+        const isoDate = parseToISO(input.value);
+        input.value = formatFromISO(isoDate);
+
+        const infoBox = document.getElementById(resultId);
+        if (isoDate && isoDate.length === 10) {
+            calculateFunc(isoDate);
+        } else {
+            infoBox.textContent = infoBox.textContent.split(':')[0] + ':';
+        }
+    }
+
+    function calcularIdade(dataNascimento) {
+        const idadeResult = document.getElementById('idadeResult');
+        const secaoResponsavel = document.getElementById('secaoResponsavel');
+        const idade = calcularIdadeFromData(dataNascimento);
+        idadeResult.textContent = `Idade: ${idade} anos`;
+        if (idade < 18) {
+            secaoResponsavel.style.display = 'block';
+        } else {
+            secaoResponsavel.style.display = 'none';
+        }
+    }
+
+    function calcularTempoAntes() {
+        const tempoEmMeses = parseInt(document.getElementById('tempoTreinoAntes').value);
+        const tempoAntesResult = document.getElementById('tempoAntesResult');
+        if (!isNaN(tempoEmMeses) && tempoEmMeses >= 0) {
+            tempoAntesResult.textContent = `Tempo antes de SZABJJ: ${calcularTempoEmMesesFromMeses(tempoEmMeses)}`;
+        } else {
+            tempoAntesResult.textContent = 'Tempo antes de SZABJJ:';
+        }
+    }
+
+    function calcularTempoEquipe(dataMatricula) {
+        const tempoEquipeResult = document.getElementById('tempoEquipeResult');
+        tempoEquipeResult.textContent = `Tempo de Equipe: ${calcularTempoEmMesesFromData(dataMatricula)}`;
+    }
+
+    function calcularTempoNaFaixaAtual(dataGraduacaoAtual) {
+        const tempoFaixaAtualResult = document.getElementById('tempoFaixaAtualResult');
+        tempoFaixaAtualResult.textContent = `Tempo na faixa: ${calcularTempoEmMesesFromData(dataGraduacaoAtual)}`;
+    }
+
+    function gerenciarHistoricoCampeonatos() {
+        const objetivos = document.getElementById('objetivos').value;
+        const historicoDiv = document.getElementById('historicoCampeonatos');
+        if (objetivos === 'Competição') {
+            historicoDiv.style.display = 'block';
+        } else {
+            historicoDiv.style.display = 'none';
+        }
+    }
+
+    function renderizarTabela(alunosParaExibir = alunos) {
+        const tabelaBody = document.querySelector('#tabelaAlunos tbody');
+        if (!tabelaBody) {
+            console.error('Elemento <tbody> não encontrado. A tabela não pode ser renderizada.');
+            return;
+        }
+
+        tabelaBody.innerHTML = '';
+        document.getElementById('totalAlunos').textContent = `Total: ${alunosParaExibir.length}`;
+        let rowNum = 1;
+
+        alunosParaExibir.forEach((aluno, idx) => {
+            const novaLinha = tabelaBody.insertRow();
+            novaLinha.setAttribute('data-index', alunos.indexOf(aluno));
+            
+            novaLinha.insertCell(0).textContent = rowNum++;
+            
+            const checkboxCell = novaLinha.insertCell(1);
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.classList.add('aluno-checkbox');
+            checkbox.value = alunos.indexOf(aluno);
+            checkboxCell.appendChild(checkbox);
+            
+            const infoCell = novaLinha.insertCell(2);
+            infoCell.innerHTML = `
+                <b>${aluno.nome}</b> (${calcularIdadeFromData(aluno.dataNasc)} anos)<br>
+                Matrícula: ${formatFromISO(aluno.dataMatricula)}<br>
+                Treino Antes: ${calcularTempoEmMesesFromMeses(aluno.tempoTreinoAntes) || '0a 0m'}<br>
+                Estilo de Luta: ${aluno.estilo}
+            `;
+
+            const statusCell = novaLinha.insertCell(3);
+            const statusSelect = document.createElement('select');
+            statusSelect.classList.add('select-edit');
+            ['Ativo', 'Inativo'].forEach(optionValue => {
+                const option = document.createElement('option');
+                option.value = optionValue;
+                option.textContent = optionValue;
+                statusSelect.appendChild(option);
+            });
+            statusSelect.value = aluno.status;
+            statusCell.appendChild(statusSelect);
+
+            const whatsappCell = novaLinha.insertCell(4);
+            let whatsappHtml = '';
+            if (aluno.whatsapp) {
+                whatsappHtml += `<a href="https://wa.me/55${aluno.whatsapp}" class="whatsapp-link" target="_blank">${aluno.whatsapp}</a>`;
+            } else {
+                whatsappHtml += 'N/A';
+            }
+            whatsappCell.innerHTML = whatsappHtml;
+
+            const respCell = novaLinha.insertCell(5);
+            let respHtml = '';
+            if (aluno.nomeResponsavel) {
+                respHtml += `Responsável: <b>${aluno.nomeResponsavel}</b><br>`;
+                if (aluno.whatsappResponsavel) {
+                    respHtml += `WhatsApp: <a href="https://wa.me/55${aluno.whatsappResponsavel}" class="whatsapp-link" target="_blank">${aluno.whatsappResponsavel}</a><br>`;
+                }
+            }
+            if (aluno.pessoasAutorizadas) {
+                respHtml += `Autorizados: ${aluno.pessoasAutorizadas}`;
+            }
+            respCell.innerHTML = respHtml || 'N/A';
+            
+            const graduacaoCell = novaLinha.insertCell(6);
+            const graduacaoSelect = document.createElement('select');
+            graduacaoSelect.classList.add('select-edit');
+            ['Branca', 'Cinza', 'Amarela', 'Laranja', 'Verde', 'Azul', 'Roxa', 'Marrom', 'Preta'].forEach(optionValue => {
+                const option = document.createElement('option');
+                option.value = optionValue;
+                option.textContent = optionValue;
+                graduacaoSelect.appendChild(option);
+            });
+            graduacaoSelect.value = aluno.graduacao;
+            graduacaoCell.appendChild(graduacaoSelect);
+
+            novaLinha.insertCell(7).textContent = calcularTempoEmMesesFromData(aluno.dataGraduacaoAtual);
+
+            const previsaoCell = novaLinha.insertCell(8);
+            previsaoCell.textContent = formatFromISO(aluno.dataPrevisaoGraduacao) || 'N/A';
+            previsaoCell.setAttribute('contenteditable', 'true');
+            previsaoCell.classList.add('editable-cell');
+
+            const objetivosCell = novaLinha.insertCell(9);
+            const objetivosSelect = document.createElement('select');
+            objetivosSelect.classList.add('select-edit');
+            ['Competição', 'Defesa Pessoal', 'Hobby', 'Atividade Física'].forEach(optionValue => {
+                const option = document.createElement('option');
+                option.value = optionValue;
+                option.textContent = optionValue;
+                objetivosSelect.appendChild(option);
+            });
+            objetivosSelect.value = aluno.objetivos;
+            objetivosCell.appendChild(objetivosSelect);
+
+            const acoesCell = novaLinha.insertCell(10);
+            const btnEditar = document.createElement('button');
+            btnEditar.innerHTML = '&#9998;';
+            btnEditar.title = 'Editar';
+            btnEditar.onclick = () => {
+                editarAluno(alunos.indexOf(aluno));
+                showTab('tabCadastrar');
+            };
+
+            const btnRemover = document.createElement('button');
+            btnRemover.innerHTML = '&#10006;';
+            btnRemover.title = 'Remover';
+            btnRemover.classList.add('btn-remove');
+            btnRemover.onclick = () => removerAluno(alunos.indexOf(aluno));
+
+            const acoesDiv = document.createElement('div');
+            acoesDiv.classList.add('action-buttons');
+            acoesDiv.appendChild(btnEditar);
+            acoesDiv.appendChild(btnRemover);
+            acoesCell.appendChild(acoesDiv);
+        });
+        
+        document.getElementById('selecionarTodos').checked = false;
+    }
+
+    document.getElementById('selecionarTodos').addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        document.querySelectorAll('.aluno-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+    });
+
+    function salvarDados() {
+        localStorage.setItem('alunos', JSON.stringify(alunos));
+    }
+
+    function editarAluno(index) {
+        const aluno = alunos[index];
+        if (!aluno) return;
+
+        document.getElementById('alunoId').value = index;
+        document.getElementById('nomeCompleto').value = aluno.nome || '';
+        document.getElementById('dataNascimento').value = formatFromISO(aluno.dataNasc) || '';
+        document.getElementById('whatsapp').value = aluno.whatsapp || '';
+        document.getElementById('status').value = aluno.status || 'Ativo';
+        document.getElementById('tempoTreinoAntes').value = aluno.tempoTreinoAntes || '';
+        document.getElementById('graduacao').value = aluno.graduacao || 'Branca';
+        document.getElementById('dataGraduacaoAtual').value = formatFromISO(aluno.dataGraduacaoAtual) || '';
+        document.getElementById('dataPrevisaoGraduacao').value = formatFromISO(aluno.dataPrevisaoGraduacao) || '';
+        document.getElementById('objetivos').value = aluno.objetivos || 'Hobby';
+        document.getElementById('estiloLuta').value = aluno.estilo || 'Guardeiro';
+        document.getElementById('dataMatricula').value = formatFromISO(aluno.dataMatricula) || '';
+
+        document.getElementById('nomeResponsavel').value = aluno.nomeResponsavel || '';
+        document.getElementById('whatsappResponsavel').value = aluno.whatsappResponsavel || '';
+        document.getElementById('pessoasAutorizadas').value = aluno.pessoasAutorizadas || '';
+        
+        gerenciarHistoricoCampeonatos();
+        if (aluno.objetivos === 'Competição' && aluno.medalhas) {
+            document.getElementById('medalhasOuro').value = aluno.medalhas.ouro || 0;
+            document.getElementById('medalhasPrata').value = aluno.medalhas.prata || 0;
+            document.getElementById('medalhasBronze').value = aluno.medalhas.bronze || 0;
+        } else {
+            document.getElementById('medalhasOuro').value = '';
+            document.getElementById('medalhasPrata').value = '';
+            document.getElementById('medalhasBronze').value = '';
+        }
+
+        calcularIdade(aluno.dataNasc);
+        calcularTempoAntes();
+        calcularTempoEquipe(aluno.dataMatricula);
+        calcularTempoNaFaixaAtual(aluno.dataGraduacaoAtual);
+
+        document.getElementById('btnSalvar').textContent = 'Salvar Edição';
+        editingId = index;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function limparFormulario() {
+        document.getElementById('formAluno').reset();
+        document.getElementById('btnSalvar').textContent = 'Adicionar Aluno';
+        editingId = null;
+        document.getElementById('idadeResult').textContent = 'Idade:';
+        document.getElementById('tempoAntesResult').textContent = 'Tempo antes de SZABJJ:';
+        document.getElementById('tempoEquipeResult').textContent = 'Tempo de Equipe:';
+        document.getElementById('tempoFaixaAtualResult').textContent = 'Tempo na faixa:';
+        document.getElementById('secaoResponsavel').style.display = 'none';
+        gerenciarHistoricoCampeonatos();
+    }
+
+    function removerAluno(index) {
+        if (confirm('Tem certeza que deseja remover este aluno?')) {
+            alunos.splice(index, 1);
+            salvarDados();
+            filtrarAlunos();
+        }
+    }
+
+    function excluirAlunosSelecionados() {
+        const checkboxes = document.querySelectorAll('.aluno-checkbox:checked');
+        if (checkboxes.length === 0) {
+            alert('Selecione pelo menos um aluno para excluir.');
+            return;
+        }
+        if (!confirm(`Tem certeza que deseja excluir ${checkboxes.length} alunos?`)) {
+            return;
+        }
+
+        const indicesParaExcluir = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        indicesParaExcluir.sort((a, b) => b - a);
+
+        indicesParaExcluir.forEach(index => {
+            alunos.splice(index, 1);
+        });
+
+        salvarDados();
+        filtrarAlunos();
+        alert(`${indicesParaExcluir.length} alunos excluídos com sucesso.`);
+    }
+
+    function salvarEdicoesEmMassa() {
+        const tabelaBody = document.querySelector('#tabelaAlunos tbody');
+        const rows = tabelaBody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const index = row.getAttribute('data-index');
+            const aluno = alunos[index];
+            if (aluno) {
+                const statusSelect = row.cells[3].querySelector('select');
+                const graduacaoSelect = row.cells[6].querySelector('select');
+                const objetivosSelect = row.cells[9].querySelector('select');
+                const previsaoCell = row.cells[8];
+
+                const novoStatus = statusSelect.value;
+                const novaGraduacao = graduacaoSelect.value;
+                const novosObjetivos = objetivosSelect.value;
+                const novaPrevisao = previsaoCell.textContent.trim();
+                
+                if (aluno.graduacao !== novaGraduacao) {
+                    const tempoNaFaixaAnterior = calcularTempoEmMesesFromData(aluno.dataGraduacaoAtual);
+                    aluno.historicoGraduacao = aluno.historicoGraduacao || [];
+                    aluno.historicoGraduacao.push({
+                        faixa: aluno.graduacao,
+                        tempo: tempoNaFaixaAnterior
+                    });
+                    aluno.dataGraduacaoAtual = (new Date()).toISOString().slice(0, 10);
+                }
+
+                aluno.status = novoStatus;
+                aluno.graduacao = novaGraduacao;
+                aluno.dataPrevisaoGraduacao = parseToISO(novaPrevisao);
+                aluno.objetivos = novosObjetivos;
+            }
+        });
+
+        salvarDados();
+        filtrarAlunos();
+        alert('Edições salvas com sucesso!');
+    }
+
+    function mudarStatusEmMassa() {
+        const checkboxes = document.querySelectorAll('.aluno-checkbox:checked');
+        const novoStatus = document.getElementById('bulkStatus').value;
+        
+        if (checkboxes.length === 0) {
+            alert('Por favor, selecione pelo menos um aluno.');
+            return;
+        }
+
+        if (novoStatus === "") {
+            alert('Por favor, selecione um novo status.');
+            return;
+        }
+
+        if (!confirm(`Tem certeza que deseja mudar o status de ${checkboxes.length} alunos para "${novoStatus}"?`)) {
+            return;
+        }
+
+        checkboxes.forEach(checkbox => {
+            const index = parseInt(checkbox.value);
+            alunos[index].status = novoStatus;
+        });
+
+        salvarDados();
+        filtrarAlunos();
+        alert(`Status de ${checkboxes.length} alunos alterado para "${novoStatus}".`);
+        document.getElementById('bulkStatus').value = ""; // Resetar o select
+    }
+
+    document.getElementById('formAluno').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const objetivos = document.getElementById('objetivos').value;
+        let medalhas = {};
+        if (objetivos === 'Competição') {
+            medalhas = {
+                ouro: document.getElementById('medalhasOuro').value || 0,
+                prata: document.getElementById('medalhasPrata').value || 0,
+                bronze: document.getElementById('medalhasBronze').value || 0
+            };
+        }
+
+        const dataNascISO = parseToISO(document.getElementById('dataNascimento').value);
+        const dataGraduacaoAtualISO = parseToISO(document.getElementById('dataGraduacaoAtual').value);
+        const dataPrevisaoGraduacaoISO = parseToISO(document.getElementById('dataPrevisaoGraduacao').value);
+        const dataMatriculaISO = parseToISO(document.getElementById('dataMatricula').value);
+
+        const alunoData = {
+            nome: document.getElementById('nomeCompleto').value,
+            dataNasc: dataNascISO,
+            whatsapp: document.getElementById('whatsapp').value,
+            status: document.getElementById('status').value,
+            nomeResponsavel: document.getElementById('nomeResponsavel').value || null,
+            whatsappResponsavel: document.getElementById('whatsappResponsavel').value || null,
+            pessoasAutorizadas: document.getElementById('pessoasAutorizadas').value || null,
+            tempoTreinoAntes: document.getElementById('tempoTreinoAntes').value,
+            graduacao: document.getElementById('graduacao').value,
+            dataGraduacaoAtual: dataGraduacaoAtualISO,
+            dataPrevisaoGraduacao: dataPrevisaoGraduacaoISO,
+            objetivos: objetivos,
+            medalhas: medalhas,
+            estilo: document.getElementById('estiloLuta').value,
+            dataMatricula: dataMatriculaISO,
+            historicoGraduacao: []
+        };
+        
+        if (calcularIdadeFromData(alunoData.dataNasc) >= 18) {
+            alunoData.nomeResponsavel = null;
+            alunoData.whatsappResponsavel = null;
+            alunoData.pessoasAutorizadas = null;
+        }
+
+        if (editingId !== null) {
+            const alunoOriginal = alunos[editingId];
+            if (alunoOriginal.graduacao !== alunoData.graduacao) {
+                const tempoNaFaixaAnterior = calcularTempoEmMesesFromData(alunoOriginal.dataGraduacaoAtual);
+                alunoData.historicoGraduacao = alunoOriginal.historicoGraduacao || [];
+                alunoData.historicoGraduacao.push({
+                    faixa: alunoOriginal.graduacao,
+                    tempo: tempoNaFaixaAnterior
+                });
+            } else {
+                alunoData.historicoGraduacao = alunoOriginal.historicoGraduacao || [];
+            }
+            alunos[editingId] = alunoData;
+            editingId = null;
+            document.getElementById('btnSalvar').textContent = 'Adicionar Aluno';
+        } else {
+            alunos.push(alunoData);
+        }
+
+        salvarDados();
+        limparFormulario();
+        showTab('tabVisualizar');
+    });
+
+    function filtrarAlunos() {
+        console.log('--- Iniciando Filtragem ---');
+        const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+        const filtroStatus = document.getElementById('filtroStatus').value;
+        const filtroMesNascimento = document.getElementById('filtroMesNascimento').value;
+        const filtroIdade = document.getElementById('filtroIdade').value;
+        const filtroGraduacao = document.getElementById('filtroGraduacao').value;
+        const filtroObjetivos = document.getElementById('filtroObjetivos').value;
+        const filtroEstiloLuta = document.getElementById('filtroEstiloLuta').value;
+
+        const alunosFiltrados = alunos.filter(aluno => {
+            const nomeMatch = (aluno.nome || '').toLowerCase().includes(filtroNome);
+            const statusMatch = !filtroStatus || aluno.status === filtroStatus;
+            const idadeMatch = !filtroIdade || calcularIdadeFromData(aluno.dataNasc) === parseInt(filtroIdade);
+            const mesNascimentoMatch = !filtroMesNascimento || (aluno.dataNasc && new Date(aluno.dataNasc).getMonth() === parseInt(filtroMesNascimento));
+            const graduacaoMatch = !filtroGraduacao || aluno.graduacao === filtroGraduacao;
+            const objetivosMatch = !filtroObjetivos || aluno.objetivos === filtroObjetivos;
+            const estiloLutaMatch = !filtroEstiloLuta || aluno.estilo === filtroEstiloLuta;
+
+            return nomeMatch && statusMatch && idadeMatch && mesNascimentoMatch && graduacaoMatch && objetivosMatch && estiloLutaMatch;
+        });
+
+        console.log('Alunos filtrados:', alunosFiltrados);
+        renderizarTabela(alunosFiltrados);
+    }
+    
+    function calcularIdadeFromData(dateString) {
+        if (!dateString) return 'N/A';
+        const [year, month, day] = dateString.split('-').map(Number);
+        const birthDate = new Date(year, month - 1, day);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
+
+    function calcularTempoEmMesesFromMeses(mesesTotal) {
+        if (!mesesTotal) return '0a 0m';
+        const meses = parseInt(mesesTotal);
+        const anos = Math.floor(meses / 12);
+        const mesesRestantes = meses % 12;
+        return `${anos}a ${mesesRestantes}m`;
+    }
+
+    function calcularTempoEmMesesFromData(dateString) {
+        if (!dateString) return 'N/A';
+        const [year, month, day] = dateString.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const today = new Date();
+        const diffInMonths = (today.getFullYear() - dateObj.getFullYear()) * 12 + (today.getMonth() - dateObj.getMonth());
+        const anos = Math.floor(diffInMonths / 12);
+        const mesesRestantes = diffInMonths % 12;
+        return `${anos}a ${mesesRestantes}m`;
+    }
+
+    document.getElementById('exportarCsvBtn').addEventListener('click', function() {
+        let csv = ["#", "Nome,Status,Data de Nascimento,Idade,WhatsApp Aluno,Nome Responsavel,WhatsApp Responsavel,Pessoas Autorizadas,Graduacao,Tempo na Faixa,Previsao de Graduacao,Objetivos,Medalhas de Ouro,Medalhas de Prata,Medalhas de Bronze,Historico de Faixas,Estilo de Luta,Tempo de Equipe,Tempo de Treino Antes,Data de Matricula,Data da Graduacao Atual"];
+        alunos.forEach((aluno, idx) => {
+            const historicoStr = (aluno.historicoGraduacao || []).map(item => `${item.faixa} (${item.tempo})`).join('; ');
+            const linha = [
+                idx + 1,
+                aluno.nome,
+                aluno.status,
+                aluno.dataNasc,
+                calcularIdadeFromData(aluno.dataNasc),
+                `+55${aluno.whatsapp}`,
+                aluno.nomeResponsavel || '',
+                `+55${aluno.whatsappResponsavel}` || '',
+                aluno.pessoasAutorizadas || '',
+                aluno.graduacao,
+                calcularTempoEmMesesFromData(aluno.dataGraduacaoAtual),
+                aluno.dataPrevisaoGraduacao || '',
+                aluno.objetivos,
+                aluno.medalhas ? aluno.medalhas.ouro : 0,
+                aluno.medalhas ? aluno.medalhas.prata : 0,
+                aluno.medalhas ? aluno.medalhas.bronze : 0,
+                historicoStr,
+                aluno.estilo,
+                calcularTempoEmMesesFromData(aluno.dataMatricula),
+                aluno.tempoTreinoAntes,
+                aluno.dataMatricula,
+                aluno.dataGraduacaoAtual
+            ];
+            csv.push(linha.map(item => `"${item}"`).join(','));
+        });
+
+        const csvString = csv.join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvString);
+        a.download = 'cadastro_alunos_jiujitsu.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+
+    document.getElementById('imprimirPdfBtn').addEventListener('click', function() {
+        window.print();
+    });
+
+    document.getElementById('limparListaBtn').addEventListener('click', function() {
+        if (confirm('Tem certeza que deseja apagar TODOS os alunos da lista? Esta ação não pode ser desfeita.')) {
+            alunos = [];
+            salvarDados();
+            filtrarAlunos();
+            alert('A lista de alunos foi limpa.');
+        }
+    });
+
+    document.getElementById('importCsvBtn').addEventListener('click', function() {
+        const fileInput = document.getElementById('importCsvInput');
+        if (fileInput.files.length === 0) {
+            alert('Por favor, selecione um arquivo CSV para importar.');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const linhas = text.split('\n');
+            const cabecalho = linhas[0].split(',').map(h => h.replace(/"/g, '').trim());
+
+            const novosAlunos = [];
+            for (let i = 1; i < linhas.length; i++) {
+                const linha = linhas[i].split(',').map(item => item.replace(/"/g, '').trim());
+                if (linha.length < cabecalho.length) continue; 
+                
+                const historicoStr = linha[cabecalho.indexOf('Historico de Faixas')] || '';
+                const historicoGraduacao = [];
+                if (historicoStr) {
+                    historicoStr.split(';').forEach(item => {
+                        const partes = item.trim().split(' (');
+                        if (partes.length > 1) {
+                            historicoGraduacao.push({
+                                faixa: partes[0].trim(),
+                                tempo: partes[1].replace(')', '').trim()
+                            });
+                        }
+                    });
+                }
+                
+                const formatWhatsApp = (num) => {
+                    if (!num) return '';
+                    return num.replace(/^\+55/, '').replace(/\D/g, '');
+                };
+
+                novosAlunos.push({
+                    nome: linha[cabecalho.indexOf('Nome')] || '',
+                    status: linha[cabecalho.indexOf('Status')] || 'Ativo',
+                    dataNasc: parseToISO(linha[cabecalho.indexOf('Data de Nascimento')]) || '',
+                    whatsapp: formatWhatsApp(linha[cabecalho.indexOf('WhatsApp Aluno')]) || '',
+                    nomeResponsavel: linha[cabecalho.indexOf('Nome Responsavel')] || '',
+                    whatsappResponsavel: formatWhatsApp(linha[cabecalho.indexOf('WhatsApp Responsavel')]) || '',
+                    pessoasAutorizadas: linha[cabecalho.indexOf('Pessoas Autorizadas')] || '',
+                    graduacao: linha[cabecalho.indexOf('Graduacao')] || '',
+                    dataGraduacaoAtual: parseToISO(linha[cabecalho.indexOf('Data da Graduacao Atual')]) || '',
+                    dataPrevisaoGraduacao: parseToISO(linha[cabecalho.indexOf('Previsao de Graduacao')]) || '',
+                    objetivos: linha[cabecalho.indexOf('Objetivos')] || '',
+                    medalhas: {
+                        ouro: parseInt(linha[cabecalho.indexOf('Medalhas de Ouro')]) || 0,
+                        prata: parseInt(linha[cabecalho.indexOf('Medalhas de Prata')]) || 0,
+                        bronze: parseInt(linha[cabecalho.indexOf('Medalhas de Bronze')]) || 0
+                    },
+                    estilo: linha[cabecalho.indexOf('Estilo de Luta')] || '',
+                    dataMatricula: parseToISO(linha[cabecalho.indexOf('Data de Matricula')]) || '',
+                    tempoTreinoAntes: parseInt(linha[cabecalho.indexOf('Tempo de Treino Antes')]) || 0,
+                    historicoGraduacao: historicoGraduacao
+                });
+            }
+
+            alunos = alunos.concat(novosAlunos);
+            salvarDados();
+            filtrarAlunos();
+            alert(`Importação concluída! ${novosAlunos.length} alunos foram adicionados.`);
+            fileInput.value = '';
+        };
+
+        reader.readAsText(file);
+    });
+
+    function limparFiltros() {
+        document.getElementById('filtroNome').value = '';
+        document.getElementById('filtroStatus').value = '';
+        document.getElementById('filtroMesNascimento').value = '';
+        document.getElementById('filtroIdade').value = '';
+        document.getElementById('filtroGraduacao').value = '';
+        document.getElementById('filtroObjetivos').value = '';
+        document.getElementById('filtroEstiloLuta').value = '';
+        filtrarAlunos();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showTab('tabCadastrar');
+        gerenciarHistoricoCampeonatos();
+    });
+</script>
+
+</body>
+</html>
